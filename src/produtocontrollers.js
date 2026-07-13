@@ -35,26 +35,47 @@ class ProdutoController {
     // Listar todos os produtos
     async listar(req, res) {
 
+        const { nome } = req.query;
+    
+        const pagina = Number(req.query.pagina) || 1;
+        const limite = Number(req.query.limite) || 10;
+    
         try {
-
+    
             const produtos = await prisma.produto.findMany({
+    
+                where: nome
+                    ? {
+                        nome: {
+                            contains: nome,
+                            mode: "insensitive"
+                        }
+                    }
+                    : {},
+    
+                skip: (pagina - 1) * limite,
+    
+                take: limite,
+    
                 orderBy: {
-                    id: "asc"
+                    nome: "asc"
                 }
+    
             });
-
-            return res.json(produtos);
-
+    
+            return res.status(200).json(produtos);
+    
         } catch (erro) {
-
+    
             return res.status(500).json({
                 mensagem: erro.message
             });
-
+    
         }
-
+    
     }
 
+       
     // Buscar produto por ID
     async buscar(req, res) {
 
