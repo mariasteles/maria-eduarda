@@ -1,44 +1,57 @@
-const prisma = require("../config/prisma");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+import prisma from "../config/prisma.js";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 class AuthController {
 
-    async register(req, res) {
+    async cadastrar(req, res) {
 
         const { nome, email, senha, tipo } = req.body;
 
         try {
 
-            const existe = await prisma.usuario.findUnique({
+            const usuarioExiste = await prisma.usuario.findUnique({
                 where: {
                     email
                 }
             });
 
-            if (existe) {
+            if (usuarioExiste) {
                 return res.status(400).json({
-                    message: "Email já cadastrado."
+                    mensagem: "Este e-mail já está cadastrado."
                 });
             }
 
             const senhaCriptografada = await bcrypt.hash(senha, 10);
 
             const usuario = await prisma.usuario.create({
+
                 data: {
                     nome,
                     email,
                     senha: senhaCriptografada,
                     tipo
                 }
+
             });
 
-            res.status(201).json(usuario);
+            return res.status(201).json({
 
-        } catch (error) {
+                mensagem: "Usuário cadastrado com sucesso.",
 
-            res.status(500).json({
-                message: error.message
+                usuario: {
+                    id: usuario.id,
+                    nome: usuario.nome,
+                    email: usuario.email,
+                    tipo: usuario.tipo
+                }
+
+            });
+
+        } catch (erro) {
+
+            return res.status(500).json({
+                mensagem: erro.message
             });
 
         }
@@ -52,15 +65,17 @@ class AuthController {
         try {
 
             const usuario = await prisma.usuario.findUnique({
+
                 where: {
                     email
                 }
+
             });
 
             if (!usuario) {
 
                 return res.status(401).json({
-                    message: "Email ou senha inválidos."
+                    mensagem: "Email ou senha inválidos."
                 });
 
             }
@@ -73,7 +88,7 @@ class AuthController {
             if (!senhaCorreta) {
 
                 return res.status(401).json({
-                    message: "Email ou senha inválidos."
+                    mensagem: "Email ou senha inválidos."
                 });
 
             }
@@ -93,18 +108,18 @@ class AuthController {
 
             );
 
-            res.json({
+            return res.json({
 
-                message: "Login realizado.",
+                mensagem: "Login realizado com sucesso.",
 
                 token
 
             });
 
-        } catch (error) {
+        } catch (erro) {
 
-            res.status(500).json({
-                message: error.message
+            return res.status(500).json({
+                mensagem: erro.message
             });
 
         }
@@ -113,4 +128,4 @@ class AuthController {
 
 }
 
-module.exports = new AuthController();
+export default new AuthController();
