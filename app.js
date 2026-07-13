@@ -1,20 +1,15 @@
-const express = require("express");
-
-const prisma = require("./config/prisma");
+import express from "express";
+import cors from "cors";
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 
-app.get("/", async (req, res) => {
-
-    const usuarios = await prisma.usuario.findMany();
-
+app.get("/", (req, res) => {
     res.json({
-        mensagem: "API funcionando!",
-        usuarios
+        mensagem: "API do Almoxarifado funcionando!"
     });
-
 });
 
-module.exports = app;
+export default app;
